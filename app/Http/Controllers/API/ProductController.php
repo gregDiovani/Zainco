@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\API;
 
+use Exception;
+use App\Models\Product;
+use Illuminate\Http\Request;
+use App\Models\ProductCategory;
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
-use App\Models\Product;
-use App\Models\ProductCategory;
-use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ProductController extends Controller
 {
@@ -75,16 +76,18 @@ class ProductController extends Controller
     public function updateProduct(Request $request, $id)
     {
         try {
-            $request->validate([
-                'name' => ['required', 'string', 'max:255'],
-                'price' => ['required', 'double'],
-                'description' => ['nullable', 'string', 'max:255'],
-                'tags' => ['nullable', 'string', 'max:255'],
-                'categories_id' => ['requires', 'double', 'max:255'],
-            ]);
 
             $product = Product::findOrFail($id);
 
+            $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'price' => ['required', 'numeric'],
+                'description' => ['nullable', 'string', 'max:255'],
+                'tags' => ['nullable', 'string', 'max:255'],
+                'categories_id' => ['required', 'numeric', 'max:255','exists:product_categories,id'],
+            ]);
+
+            
             $product->update([
                 'name' => $request->name,
                 'price' => $request->price,
@@ -92,20 +95,18 @@ class ProductController extends Controller
                 'tags' => $request->tags,
                 'categories_id' => $request->categories_id,
             ]);
-
-            $data = ProductCategory::where('id', '=', $product->id)->get();
-
+            
+            $data = Product::where('id', '=', $product->id)->with('category')->get();
 
             return ResponseFormatter::success([
-                'message' => 'Ketegori berhasil diperbaharui',
-                'category' => $data
+                'message' => 'Produk berhasil diperbaharui',
+                'data' => $data
 
             ]);
-        } catch (Exception $error) {
+        } catch (ModelNotFoundException  $error) {
             return ResponseFormatter::error([
                 'message' => 'Something went wrong',
                 'error' => $error
-
             ]);
         }
     }
