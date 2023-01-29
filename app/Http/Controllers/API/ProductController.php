@@ -96,6 +96,8 @@ class ProductController extends Controller
                 'categories_id' => $request->categories_id,
             ]);
             
+
+            
             $data = Product::where('id', '=', $product->id)->with('category')->get();
 
             return ResponseFormatter::success([
@@ -109,5 +111,28 @@ class ProductController extends Controller
                 'error' => $error
             ]);
         }
+    }
+
+    public function destroy($id)
+    {
+
+        try{
+            $product = Product::findOrFail($id);
+
+             $product->delete();
+
+                return ResponseFormatter::success([
+                    'message' => 'Product berhasil dihapus'
+                ]);
+
+            }catch(Exception $e){
+                return ResponseFormatter::error([
+                    'message' => 'Something went wrong'
+                ]);
+
+            }
+
+        
+
     }
 }

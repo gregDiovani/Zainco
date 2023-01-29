@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Product;
+use App\Models\Transaction;
+use Illuminate\Http\Request;
+use App\Models\TransactionItem;
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
-use App\Models\Transaction;
-use App\Models\TransactionItem;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
@@ -18,8 +19,10 @@ class TransactionController extends Controller
         $status = $request->input('status');
 
         if ($id) {
+
             $transaction = Transaction::with(['items.product'])->find($id);
 
+            /// Jika Id product ada
             if ($transaction) {
                 return ResponseFormatter::success(
                     $transaction,
@@ -48,28 +51,46 @@ class TransactionController extends Controller
 
     public function checkout(Request $request)
     {
+
         $request->validate([
             'items' => 'required|array',
             'items.*.id' => 'exists:products,id',
             'total_price' => 'required',
-            'status' => 'required|in:PENDING,SUCCESS'
+            'status' => 'required|in:PENDING,SUCCESS',
+            'payment' => 'required|in:gopay,mandiri,bca,mandiri' /// jenis payment
         ]);
 
-        $transaction = Transaction::create([
-            'users_id' => Auth::user()->id,
-            'total_price' => $request->total_price,
-            'status' => $request->status,
-        ]);
+        $external_id = 'zainco-' . time();
 
         foreach ($request->items as $product) {
-            TransactionItem::create([
-                'users_id' => Auth::user()->id,
-                'products_id' => $product['id'],
-                'transactions_id' => $transaction->id,
-                'quantity' => $product['quantity']
-            ]);
+
+            $checkout = array(
+                'order_id' =>  $external_id,
+                'totalRp' => $request->total_price,
+                'produk_item'   => $request->items,
+                'user' => Auth::user()->id,
+                'jenis_payment' =>$request->payment,
+                
+                );
+
+                if($request->payment == 'mandiri' || $request->payment == 'bca'){
+                $bank = array(
+                    "bank" => $request->payment,
+                    "va_number" =>$request->va
+                );
+                    $checkout+=$bank;  
+                }
+    
+            if($request->payment == 'gopay'){
+             return MidTransController::createGopay($checkout);
+            }
+
+            elseif($request->payment == 'mandiri' || $request->payment == 'bca'){
+                return MidTransController::createBank($checkout);
+            }
+
         }
 
-        return ResponseFormatter::success($transaction->load('items.product'), 'Transaksi berhasil');
     }
+
 }
