@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Controllers\API\PaymentProcessController;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        // $this->app->bind(PaymentProcessController::class, function($app) {
+		// 	return new PaymentProcessController();
+		// });
     }
 }

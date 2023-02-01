@@ -16,7 +16,7 @@ class ProductController extends Controller
     public function all(Request $request)
     {
         $users_id = Auth::user()->id;
-        $products = Product::where('users_id', $users_id)->with(['category', 'galleries'])->get();
+        $products = Product::where('users_id', $users_id)->with(['category', 'galleries'])->paginate(5);
 
         if ($products) {
             return ResponseFormatter::success(

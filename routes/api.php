@@ -1,10 +1,11 @@
 <?php
 
-use App\Http\Controllers\API\MidTransController;
+use App\Http\Controllers\API\PaymentProcessController;
 use App\Http\Controllers\API\ProductCategoryController;
 use App\Http\Controllers\API\ProductController;
 use App\Http\Controllers\API\TransactionController;
 use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\StatusPaymentController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 
+// Route::get('auth/google', [UserControlleRoute::get('auth/google/callback', [UserController::class, 'handleGoogleCallback']);
+// r::class, 'redirectToGoogle'])->name('googleLogin');
 
 Route::post('register', [UserController::class, 'register']);
 Route::post('login', [UserController::class, 'login']);
@@ -42,21 +45,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('categories/update/{id}', [ProductCategoryController::class, 'updateProductCategory']);
     Route::post('categories/destroy/{id}', [ProductCategoryController::class, 'destroy']);
 
-
-
-
     /**
      * User Router.
      *
      * 
      */
-    Route::get('user', [UserController::class, 'fetch']);
-    
-
+    Route::get('user', [UserController::class, 'fetch']);   
     Route::post('updateprofile', [UserController::class, 'updateProfile']);
     Route::post('logout', [UserController::class, 'logout']);
-
-    
 
 
      /**
@@ -66,6 +62,10 @@ Route::middleware('auth:sanctum')->group(function () {
      */
     Route::get('transaction', [TransactionController::class, 'all']);
     Route::post('checkout', [TransactionController::class, 'checkout']);
-    Route::get('getstatus/{orderid}', [MidTransController::class, 'getStatus']);
+    Route::post('konfirmasipembayaran/{orderid}', [TransactionController::class, 'konfirmasiPembayaranTunai']);
+    Route::get('transaction/{orderid}', [TransactionController::class, 'checkstatus']);
+    
 
 });
+
+

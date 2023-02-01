@@ -20,6 +20,7 @@ class Transaction extends Model
         'order_id',
         'total_price',
         'payment',
+        'kembalian',
         'donation',
         'status',
     ];

@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Helpers\ResponseFormatter;
-use App\Http\Controllers\Controller;
-use App\Models\User;
 use Exception;
+use App\Models\User;
 use Illuminate\Http\Request;
+use App\Helpers\ResponseFormatter;
+use Laravel\Fortify\Rules\Password;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Laravel\Fortify\Rules\Password;
+use Laravel\Socialite\Facades\Socialite;
 
 class UserController extends Controller
 {
@@ -51,6 +52,44 @@ class UserController extends Controller
 
             ], 'Authentication Failed', 500);
         }
+    }
+
+
+    public function redirectToGoogle()
+    {
+       
+    }
+
+    public function handleGoogleCallback()
+    {
+        try{ $user = Socialite::driver('google')->user();
+        }catch(Exception $e){
+            return route('googleLogin');
+        }
+       
+        $existingUser = User::where('email', $user->email)->first();
+        if ($existingUser) {
+            // Login the existing user
+            Auth::login($existingUser);
+
+            $tokenResult = $user->createToken('authToken')->plainTextToken;
+
+             return ResponseFormatter::success([
+                'access_token' => $tokenResult,
+                'token_type' => 'Bearer',
+                'user' => $user
+            ], 'Authenticated');
+
+            
+        } else {
+            // Create a new user
+            $newUser = new User;
+            $newUser->name = $user->name;
+            $newUser->email = $user->email;
+            $newUser->save();
+            Auth::login($newUser);
+        }
+
     }
 
     public function login(Request $request)
