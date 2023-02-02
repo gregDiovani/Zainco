@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use Carbon\Carbon;
 use App\Models\Product;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -61,10 +62,9 @@ class TransactionController extends Controller
             'items.*.quantity' => 'required|numeric',
             'total_price' => 'required',
             'status' => 'required|in:PENDING,SUCCESS',
-            'payment' => 'required|in:gopay,mandiri,bca,mandiri,tunai' /// jenis payment
+            'payment' => 'required' /// jenis payment
         ]);
 
-    
 
         $total_price = 0;
         $total_quantity = 0;
@@ -95,12 +95,10 @@ class TransactionController extends Controller
 
 
 
-        $external_id = 'zainco-' . time();
-
         foreach ($request->items as $product) {
 
             $checkout = array(
-                'order_id' =>  $external_id,
+                'order_id' =>  $request->order_id,
                 'totalRp' => $request->total_price,
                 'produk_item'   => $request->items,
                 'user' => Auth::user()->id,
@@ -109,81 +107,62 @@ class TransactionController extends Controller
 
 
 
-            /// Proses Jenis Pembayaran
-
-            if($request->payment == 'tunai'){
+            if ($request->payment == 'tunai') {
 
                 $payment = new PaymentProcessController($checkout);
                 return $payment->createPaymentTunai();
 
+            }
+
+
+           
+            // }elseif($request->payment == 'gopay' || $request->payment == 'mandiri' || $request->payment == 'bca' ){
+            //     $payment = new PaymentProcessController($checkout);
+            //     return $payment->createPaymentOnline();
+
+            // }
+
             
-            } elseif ($request->payment == 'gopay') {
-                $payment = new PaymentProcessController($checkout);
-                return $payment->createPaymentGopay();
+            // } elseif ($request->payment == 'gopay') {
+            //     $payment = new PaymentProcessController($checkout);
+            //     return $payment->createPaymentGopay();
 
-            }
+            // }
 
-            elseif($request->payment == 'shopepay' )
-            {
-                    $payment = new PaymentProcessController($checkout);
-                    return $payment->createPaymentShopePay();
-                   
-            }
+            // elseif($request->payment == 'mandiri' 
+            // || $request->payment == 'bca')
+            // {
+            //     $bank = array(
+            //         "bank" => $request->payment,
+            //         "va_number" =>$request->va
+            //     );
+            //         $checkout+=$bank; 
 
-            elseif($request->payment == 'mandiri' 
-            || $request->payment == 'bca')
-            {
-                $bank = array(
-                    "bank" => $request->payment,
-                    "va_number" =>$request->va
-                );
-                    $checkout+=$bank; 
-
-                    $payment = new PaymentProcessController($checkout);
-                    return $payment->createPaymentBank();
+            //         $payment = new PaymentProcessController($checkout);
+            //         return $payment->createPaymentBank();
 
                    
-            }
+            // }
 
         }
 
     }
 
-    public function checkstatus($transaction_id){
+   
 
-        $transaction = Transaction::where('order_id',$transaction_id)->first();
-        if ($transaction) {
-            event(new PaymentSuccess($transaction_id));
-
-            return ResponseFormatter::success(
-                $transaction,
-                'Data Transaksi user berhasil diambil'
-            );
-        } else {
-            return ResponseFormatter::error(
-                null,
-                'Data Transaksi tidak ada',
-                404
-            );
-        }
-
-
-    }
-
-    public function konfirmasiPembayaranTunai(Request $request,$transaction_id){
+    public function konfirmasiPembayaranTunai(Request $request,$id){
         
-        $transaction = Transaction::where('order_id',$transaction_id)->where('payment', 'TUNAI')->first();
-        dd($transaction);
-        if ($transaction) {
+        $transaction = Transaction::find($id);
 
-            $$transaction->update([
+        if ($transaction) {
+            $transaction->update([
                 'status' => 'PAID',
-                'kembalian' => $request->kembalian
+                'kembalian' => $request->kembalian,
+                'updated_at' => Carbon::now()
             ]);
 
             return ResponseFormatter::success(
                 $transaction,
-                'Success'
             );
 
 
@@ -197,6 +176,31 @@ class TransactionController extends Controller
         }
 
     }
+
+
+
+    /// MIDTRANS
+    
+     // public function checkstatus($transaction_id){
+
+    //     $transaction = Transaction::where('order_id',$transaction_id)->first();
+    //     if ($transaction) {
+    //         event(new PaymentSuccess($transaction_id));
+
+    //         return ResponseFormatter::success(
+    //             $transaction,
+    //             'Data Transaksi user berhasil diambil'
+    //         );
+    //     } else {
+    //         return ResponseFormatter::error(
+    //             null,
+    //             'Data Transaksi tidak ada',
+    //             404
+    //         );
+    //     }
+
+
+    // }
 
 
 

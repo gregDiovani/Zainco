@@ -16,7 +16,7 @@ class CreateTransactionsTable extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('users_id');
-            $table->string('order_id');
+            $table->string('order_id')->nullable();
             $table->float('total_price');
             $table->string('payment')->default('tunai');
             $table->float('donasi')->nullable();

@@ -62,8 +62,9 @@ Route::middleware('auth:sanctum')->group(function () {
      */
     Route::get('transaction', [TransactionController::class, 'all']);
     Route::post('checkout', [TransactionController::class, 'checkout']);
-    Route::post('konfirmasipembayaran/{orderid}', [TransactionController::class, 'konfirmasiPembayaranTunai']);
-    Route::get('transaction/{orderid}', [TransactionController::class, 'checkstatus']);
+    Route::post('konfirmasipembayaran/{id}', [TransactionController::class, 'konfirmasiPembayaranTunai']);
+    
+    // Route::get('transaction/{orderid}', [TransactionController::class, 'checkstatus']);
     
 
 });

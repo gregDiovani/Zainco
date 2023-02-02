@@ -28,180 +28,104 @@ class PaymentProcessController extends Controller{
 
     }
 
-    public  function createPaymentShopePay(){
+// public  function createPaymentShopePay(){
 
     
 
-        \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+    //     \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
     
-    // $items = [];
+    // // $items = [];
     
-    // foreach ($product["produk_item"] as $item) {
+    // // foreach ($product["produk_item"] as $item) {
     
-    //     $itemDetail = Product::where('id',$item['id'])->first();  
-    //     $new_item = array(
-    //         'price' => $itemDetail->price ,
-    //         'id' => $item['id'],
-    //         'quantity' => $item['quantity'],
-    //         'name'=> $itemDetail->name,
-    //     );
-    //     array_push($items, $new_item);
-    // }
-        try{
-        $shopePay = MidTransHelperPayload::gopayPayload($this->product);
+    // //     $itemDetail = Product::where('id',$item['id'])->first();  
+    // //     $new_item = array(
+    // //         'price' => $itemDetail->price ,
+    // //         'id' => $item['id'],
+    // //         'quantity' => $item['quantity'],
+    // //         'name'=> $itemDetail->name,
+    // //     );
+    // //     array_push($items, $new_item);
+    // // }
+    //     try{
+    //     $shopePay = MidTransHelperPayload::gopayPayload($this->product);
     
-    
-    
-        $response = \Midtrans\CoreApi::charge($shopePay);
+    //     $response = \Midtrans\CoreApi::charge($shopePay);
         
-        $response_code = intval($response->status_code);
+    //     $response_code = intval($response->status_code);
     
-        if($response_code == 201 || $response_code == 200){
+    //     if($response_code == 201 || $response_code == 200){
         
-        //masukan ke database
-        $transaction = Transaction::create([
-            'users_id' => $this->product['user'],
-            'order_id' => $this->product['order_id'],
-            'total_price' =>$this->product['totalRp'],
-            'status' => 'PENDING',
-            'payment' => $this->product['jenis_payment'],
+    //     //masukan ke database
+    //     $transaction = Transaction::create([
+    //         'users_id' => $this->product['user'],
+    //         'order_id' => $this->product['order_id'],
+    //         'total_price' =>$this->product['totalRp'],
+    //         'status' => 'PENDING',
+    //         'payment' => $this->product['jenis_payment'],
           
-        ]);
+    //     ]);
     
-        $produk_item = $this->product["produk_item"];
-        foreach ($produk_item as $item) {
-            TransactionItem::create([
-                'users_id' => $this->product['user'],
-                'products_id' =>$item['id'],
-                'transactions_id' => $transaction->id,
-                'quantity' => $item['quantity']
-            ]);
-        }
-            return ResponseFormatter::success($response, 'Transaksi berhasil dibuat');
+    //     $produk_item = $this->product["produk_item"];
+    //     foreach ($produk_item as $item) {
+    //         TransactionItem::create([
+    //             'users_id' => $this->product['user'],
+    //             'products_id' =>$item['id'],
+    //             'transactions_id' => $transaction->id,
+    //             'quantity' => $item['quantity']
+    //         ]);
+    //     }
+    //         return ResponseFormatter::success($response, 'Transaksi berhasil dibuat');
     
-            }
-        }catch(Exception $e){
-            return ResponseFormatter::error([
-                'message' => 'Something went wrong...pls try again'
-            ]);
-        }
-    }
+    //         }
+    //     }catch(Exception $e){
+    //         return ResponseFormatter::error([
+    //             'message' => 'Something went wrong...pls try again'
+    //         ]);
+    //     }
+    // }
 
-public  function createPaymentGopay(){
 
-    
+// public  function createPaymentBank(){
 
-    \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
 
-// $items = [];
+//         \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
 
-// foreach ($product["produk_item"] as $item) {
 
-//     $itemDetail = Product::where('id',$item['id'])->first();  
-//     $new_item = array(
-//         'price' => $itemDetail->price ,
-//         'id' => $item['id'],
-//         'quantity' => $item['quantity'],
-//         'name'=> $itemDetail->name,
-//     );
-//     array_push($items, $new_item);
+//         try {
+//             $bank = MidTransHelperPayload::BankPayload($this->product);
+//             p
+//             $paymentUrl = \Midtrans\Snap::createTransaction($bank)->redirect_url;
+           
+//                 //masukan ke database
+//                 $transaction = Transaction::create([
+//                     'users_id' => $this->product['user'],
+//                     'order_id' =>$this->product['order_id'],
+//                     'total_price' => $this->product['totalRp'],
+//                     'status' => 'PENDING',
+//                     'payment' => $this->product['jenis_payment'],
+
+//                 ]);
+
+//                 $produk_item = $this->product["produk_item"];
+//                 foreach ($produk_item as $item) {
+//                     TransactionItem::create([
+//                         'users_id' => $this->product['user'],
+//                         'products_id' => $item['id'],
+//                         'transactions_id' => $transaction->id,
+//                         'quantity' => $item['quantity']
+//                     ]);
+//                 }
+
+//                 return ResponseFormatter::success($response);
+//             }
+//         } catch (Exception $e) {
+//             return ResponseFormatter::error([
+//                 'message' => 'Something went wrong'
+//             ]);
+//         }
+
 // }
-    try{
-
-            $response = retry(3, function () {
-                $gopay = MidTransHelperPayload::gopayPayload($this->product);
-
-                return \Midtrans\CoreApi::charge($gopay);
-            }, 200);
-    
-    $response_code = intval($response->status_code);
-
-    if($response_code == 201 || $response_code == 200){
-    
-    //masukan ke database
-    $transaction = Transaction::create([
-        'users_id' => $this->product['user'],
-        'order_id' => $this->product['order_id'],
-        'total_price' =>$this->product['totalRp'],
-        'status' => 'PENDING',
-        'payment' => $this->product['jenis_payment'],
-      
-    ]);
-
-    $produk_item = $this->product["produk_item"];
-    foreach ($produk_item as $item) {
-        TransactionItem::create([
-            'users_id' => $this->product['user'],
-            'products_id' =>$item['id'],
-            'transactions_id' => $transaction->id,
-            'quantity' => $item['quantity']
-        ]);
-    }
-        return ResponseFormatter::success($response, 'Transaksi berhasil dibuat');
-
-        }
-    }catch(Exception $e){
-        return ResponseFormatter::error([
-            'message' => 'Something went wrong...pls try again'
-        ]);
-    }
-}
-
-public  function createPaymentBank(){
-
-
-        \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-
-        // $items = [];
-
-        // foreach ($product["produk_item"] as $item) {
-
-        //     $itemDetail = Product::where('id',$item['id'])->first();  
-        //     $new_item = array(
-        //         'price' =>$itemDetail->price ,
-        //         'id' => $item['id'],
-        //         'quantity' => $item['quantity'],
-        //         'name'=>$itemDetail->name,
-        //     );
-        //     array_push($items, $new_item);
-        // }
-        try {
-            $bank = MidTransHelperPayload::BankPayload($this->product);
-            
-            $response = \Midtrans\CoreApi::charge($bank);
-
-            $response_code = intval($response->status_code);
-            if ($response_code == 201 || $response_code == 200) {
-
-                //masukan ke database
-                $transaction = Transaction::create([
-                    'users_id' => $this->product['user'],
-                    'order_id' =>$this->product['order_id'],
-                    'total_price' => $this->product['totalRp'],
-                    'status' => 'PENDING',
-                    'payment' => $this->product['jenis_payment'],
-
-                ]);
-
-                $produk_item = $this->product["produk_item"];
-                foreach ($produk_item as $item) {
-                    TransactionItem::create([
-                        'users_id' => $this->product['user'],
-                        'products_id' => $item['id'],
-                        'transactions_id' => $transaction->id,
-                        'quantity' => $item['quantity']
-                    ]);
-                }
-
-                return ResponseFormatter::success($response);
-            }
-        } catch (Exception $e) {
-            return ResponseFormatter::error([
-                'message' => 'Something went wrong'
-            ]);
-        }
-
-}
 
 
 public  function createPaymentTunai(){
@@ -237,6 +161,49 @@ public  function createPaymentTunai(){
             ]);
         }
 }
+
+// public  function createPaymentOnline(){
+
+    
+
+//     \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+
+//     try{
+//     $gopay = MidTransHelperPayload::MidtransPayload($this->product);
+//     $paymentUrl = \Midtrans\Snap::createTransaction($gopay)->redirect_url;
+
+//     //masukan ke database
+//     $transaction = Transaction::create([
+//         'users_id' => $this->product['user'],
+//         'order_id' => $this->product['order_id'],
+//         'total_price' =>$this->product['totalRp'],
+//         'status' => 'PENDING',
+//         'payment' => $this->product['jenis_payment'],
+      
+//     ]);
+
+//     $produk_item = $this->product["produk_item"];
+//     foreach ($produk_item as $item) {
+//         TransactionItem::create([
+//             'users_id' => $this->product['user'],
+//             'products_id' =>$item['id'],
+//             'transactions_id' => $transaction->id,
+//             'quantity' => $item['quantity']
+//         ]);
+//     }
+
+//     return ResponseFormatter::success([
+//         'redirect-url'=> $paymentUrl]
+//         , 'Transaksi berhasil dibuat');
+//         }catch(Exception $e ){
+//             return ResponseFormatter::error([
+//                 'message' => 'Something went wrong'
+//             ]);
+
+//         }
+  
+// }
+
 
 
 
