@@ -62,7 +62,7 @@ class TransactionController extends Controller
             'items.*.quantity' => 'required|numeric',
             'total_price' => 'required',
             'status' => 'required|in:PENDING,SUCCESS',
-            'payment' => 'required' /// jenis payment
+            'payment' => 'required|in:TUNAI,Gopay,Ovo,ShopePay' /// jenis payment
         ]);
 
 
@@ -93,8 +93,6 @@ class TransactionController extends Controller
         }
 
 
-
-
         foreach ($request->items as $product) {
 
             $checkout = array(
@@ -116,11 +114,11 @@ class TransactionController extends Controller
 
 
            
-            // }elseif($request->payment == 'gopay' || $request->payment == 'mandiri' || $request->payment == 'bca' ){
-            //     $payment = new PaymentProcessController($checkout);
-            //     return $payment->createPaymentOnline();
+            elseif($request->payment == 'Go-Pay' || $request->payment == 'OVO' || $request->payment == 'ShopePay' ){
+                $payment = new PaymentProcessController($checkout);
+                return $payment->createPaymentLainnya();
 
-            // }
+            }
 
             
             // } elseif ($request->payment == 'gopay') {
@@ -150,7 +148,7 @@ class TransactionController extends Controller
 
    
 
-    public function konfirmasiPembayaranTunai(Request $request,$id){
+    public function konfirmasiPembayaran(Request $request, $id){
         
         $transaction = Transaction::find($id);
 
@@ -180,7 +178,7 @@ class TransactionController extends Controller
 
 
     /// MIDTRANS
-    
+
      // public function checkstatus($transaction_id){
 
     //     $transaction = Transaction::where('order_id',$transaction_id)->first();

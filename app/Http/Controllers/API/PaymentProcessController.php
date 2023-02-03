@@ -162,6 +162,41 @@ public  function createPaymentTunai(){
         }
 }
 
+
+public  function createPaymentLainnya(){
+
+    try {
+
+        $transaction = Transaction::create([
+            'users_id' => $this->product['user'],
+            'order_id' => $this->product['order_id'],
+            'total_price' => $this->product['totalRp'],
+            'status' => 'PENDING',
+            'payment' => $this->product['jenis_payment'],
+
+        ]);
+
+        $produk_item = $this->product["produk_item"];
+        foreach ($produk_item as $item) {
+            TransactionItem::create([
+                'users_id' => $this->product['user'],
+                'products_id' => $item['id'],
+                'transactions_id' => $transaction->id,
+                'quantity' => $item['quantity']
+            ]);
+
+        }
+
+        return ResponseFormatter::success($transaction->load('items.product'), 'Transaksi berhasil');
+
+
+    }catch(Exception $e){
+        return ResponseFormatter::error([
+            'message' => 'Something went wrong'
+        ]);
+    }
+}
+
 // public  function createPaymentOnline(){
 
     
